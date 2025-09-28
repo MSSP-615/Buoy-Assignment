@@ -1,0 +1,71 @@
+---
+title: "Buoys -- Data and Analysis"
+author: "Madeleine Livaudais"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Packages to Install
+
+```{r, warning = FALSE, message=FALSE}
+library(data.table)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(zoo)
+library(tibble)
+library(readr)
+```
+
+## Read in the Buoy Data
+
+```{r}
+file_head <- "https://www.ndbc.noaa.gov/view_text_file.php?filename=44013h"
+file_tail <- ".txt.gz&dir=data/historical/stdmet/"
+
+load_buoy_data <- function(year) {
+  path <- paste0(file_head, year, file_tail)
+
+  header <- scan(path, what = 'character', nlines = 1)
+  num_columns <- length(header)  
+
+  if (num_columns == 16) {
+    buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+    buoy <- add_column(buoy, mm = NA, .after = "hh")
+    buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+    
+  } else if (num_columns == 17) {
+    buoy <- read.table(path, fill = TRUE, header = TRUE, sep = "")
+    buoy <- add_column(buoy, TIDE = NA, .after = "VIS")
+
+  } else {
+    buoy <- fread(path, header = FALSE, skip = 1, fill = TRUE)
+    setnames(buoy, header)
+  }
+  return(buoy)
+}
+
+all_data <- lapply(1985:2024, load_buoy_data)
+combined_data <- rbindlist(all_data, fill = TRUE)
+
+```
+
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
