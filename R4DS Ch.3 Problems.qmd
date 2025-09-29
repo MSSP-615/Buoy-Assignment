@@ -37,35 +37,40 @@ a.  Had an arrival delay of two or more hours
 ```{r}
 flights %>% filter(arr_delay >= 120)
 ```
-<p> <br> </p>
+
+<p><br></p>
 
 b.  Flew to Houston (`IAH` or `HOU`)
 
 ```{r}
 flights %>% filter(dest == 'IAH' | dest == 'HOU')
 ```
-<p> <br> </p>
+
+<p><br></p>
 
 c.  Were operated by United, American, or Delta
 
 ```{r}
 flights %>% filter(carrier %in% c('UA', 'AA', 'DL'))
 ```
-<p> <br> </p>
+
+<p><br></p>
 
 d.  Departed in summer (July, August, and September)
 
 ```{r}
 flights %>% filter(month %in% c(7, 8, 9))
 ```
-<p> <br> </p>
+
+<p><br></p>
 
 e.  Arrived more than two hours late but didn’t leave late
 
 ```{r}
 flights %>% filter(arr_delay >=120 & dep_delay <= 0)
 ```
-<p> <br> </p>
+
+<p><br></p>
 
 f.  Were delayed by at least an hour, but made up over 30 minutes in flight
 
@@ -73,7 +78,7 @@ f.  Were delayed by at least an hour, but made up over 30 minutes in flight
 flights %>% filter(dep_delay >= 60 & (dep_delay - arr_delay) > 30)
 ```
 
-<p> <br> </p>
+<p><br></p>
 
 4.  Was there a flight on every day of 2013?
 
@@ -81,7 +86,7 @@ flights %>% filter(dep_delay >= 60 & (dep_delay - arr_delay) > 30)
 flights %>% distinct(year, month, day) %>% nrow()
 ```
 
-<p> <br> </p>
+<p><br></p>
 
 5.  Which flights traveled the farthest distance? Which traveled the least distance?
 
@@ -99,34 +104,34 @@ shortest <- flights %>%
 shortest
 ```
 
-<p> <br> <br> </p>
+<p><br> <br></p>
 
 ## Section 3.3.5 Exercises
 
 1.  Compare dep_time, sched_dep_time, and dep_delay. How would you expect those three numbers to be related?
 
-- These numbers all relate to the departure time of the flight. The relationship is:
+-   These numbers all relate to the departure time of the flight. The relationship is:
 
-            dep_time - sched_dep_time = dep_delay
+    ```         
+          dep_time - sched_dep_time = dep_delay
+    ```
 
     (Actual Departure Time − Scheduled Departure Time = Departure Delay)
 
-
-<p> <br> </p>
+<p><br></p>
 
 4.  What does the any_of() function do? Why might it be helpful in conjunction with this vector?
 
     variables \<- c("year", "month", "day", "dep_delay", "arr_delay")
 
-The purpose of the any_of() function is to select columns from a data frame using a character vector of column names, like the one shown above, while ignoring any names that are not in the vector. The example result is shown below. 
+The purpose of the any_of() function is to select columns from a data frame using a character vector of column names, like the one shown above, while ignoring any names that are not in the vector. The example result is shown below.
 
 ```{r}
 variables <- c("year", "month", "day", "dep_delay", "arr_delay")
 flights %>% select(any_of(variables))
 ```
 
-
-<p> <br> <br> </p>
+<p><br> <br></p>
 
 ## Section 3.5.7 Exercises
 
@@ -140,10 +145,9 @@ flights %>%
   ungroup()
 ```
 
-ANSWER: 
-I think it would be very hard to fully disentangle the two effects because it's all intertwined together and there is probably a lot of confounding going in between the varaibles. Looking at grouping by both variables helps a bit though. 
+ANSWER: I think it would be very hard to fully disentangle the two effects because it's all intertwined together and there is probably a lot of confounding going in between the varaibles. Looking at grouping by both variables helps a bit though.
 
-<p> <br> </p>
+<p><br></p>
 
 2.  Find the flights that are most delayed upon departure from each destination.
 
@@ -155,13 +159,13 @@ flights %>%
   ungroup()
 ```
 
-<p> <br> </p>
+<p><br></p>
 
 4.  What happens if you supply a negative n to slice_min() and friends?
 
-- It will return all the rows except the specified number of rows to the corresponding end. Slice_head will return all but the last n rows. Slice_tail will return all but the first n rows. Slice_min will return all rows but the n rows with the largest value rows . Slice_max will return all rows but the n smallest value rows. 
+-   It will return all the rows except the specified number of rows to the corresponding end. Slice_head will return all but the last n rows. Slice_tail will return all but the first n rows. Slice_min will return all rows but the n rows with the largest value rows . Slice_max will return all rows but the n smallest value rows.
 
-<p> <br> </p>
+<p><br></p>
 
 6.  Suppose we have the following tiny data frame:
 
@@ -175,37 +179,33 @@ df <- tibble(
 
 a)  Write down what you think the output will look like, then check if you were correct, and describe what group_by() does.
 
-- I think it will put the a's together and the b's together and tell us how many of each. 
+-   I think it will put the a's together and the b's together and tell us how many of each.
 
 ```{r}
 df |>
   group_by(y)
 ```
 
-- I was wrong in my initial thoughts. Group by does not actually change the df at all. It just counts how many groups you have in the y column and reports that number back in the heading. 
+-   I was wrong in my initial thoughts. Group by does not actually change the df at all. It just counts how many groups you have in the y column and reports that number back in the heading.
 
-
-<p> <br> </p>
-
+<p><br></p>
 
 b)  Write down what you think the output will look like, then check if you were correct, and describe what arrange() does. Also, comment on how it’s different from the group_by() in part (a).
 
-- I think it will put the y col in alphabetical order. 
+-   I think it will put the y col in alphabetical order.
 
 ```{r}
 df |>
   arrange(y)
 ```
 
-- I was correct in my thoughts, but didn't explain it very well. I explained it as what I thought group by would do. Arrange actually moves the rows around so that the same y variables are together, in alphabetical order. 
+-   I was correct in my thoughts, but didn't explain it very well. I explained it as what I thought group by would do. Arrange actually moves the rows around so that the same y variables are together, in alphabetical order.
 
-
-<p> <br> </p>
-
+<p><br></p>
 
 c)  Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does.
 
-- I think this will group by the variables in the y col, a and b. Then, it will take the mean of the a's and b's and put them in order. 
+-   I think this will group by the variables in the y col, a and b. Then, it will take the mean of the a's and b's and put them in order.
 
 ```{r}
 df |>
@@ -213,15 +213,13 @@ df |>
   summarize(mean_x = mean(x))
 ```
 
-- I was correct in my thinking here. It grouped according to the y column, so a's and b's, then took the mean of the a's and mean of the b's and reported those numbers back, in alphabetical order based on the y column. 
+-   I was correct in my thinking here. It grouped according to the y column, so a's and b's, then took the mean of the a's and mean of the b's and reported those numbers back, in alphabetical order based on the y column.
 
-
-<p> <br> </p>
-
+<p><br></p>
 
 d)  Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does. Then, comment on what the message says.
 
-- I think this will group by the variables in the y col, a and b, and the z col, K and L. Then it will take the mean of the aK's, the aL's, the bK's, and bL's and put them in order.
+-   I think this will group by the variables in the y col, a and b, and the z col, K and L. Then it will take the mean of the aK's, the aL's, the bK's, and bL's and put them in order.
 
 ```{r}
 df |>
@@ -229,15 +227,13 @@ df |>
   summarize(mean_x = mean(x))
 ```
 
-- Yes, I was correct in my thinking. I didn't realize there were not going to be any bL's, but the thought process was correct. 
+-   Yes, I was correct in my thinking. I didn't realize there were not going to be any bL's, but the thought process was correct.
 
-
-<p> <br> </p>
-
+<p><br></p>
 
 e)  Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does. How is the output different from the one in part (d)?
 
-- I think this will do something similar to part (d). I'm honestly a bit confused by the .groups call, so need to see what it does.
+-   I think this will do something similar to part (d). I'm honestly a bit confused by the .groups call, so need to see what it does.
 
 ```{r}
 df |>
@@ -245,15 +241,13 @@ df |>
   summarize(mean_x = mean(x), .groups = "drop")
 ```
 
-- I was correct in my thinking. The only difference I see is that it is not listing the number od groups in the header. I'm not sure if there is anything different going on in the acutal processing of the code, but it doesn't seem different. 
+-   I was correct in my thinking. The only difference I see is that it is not listing the number od groups in the header. I'm not sure if there is anything different going on in the acutal processing of the code, but it doesn't seem different.
 
-
-<p> <br> </p>
-
+<p><br></p>
 
 f)  Write down what you think the outputs will look like, then check if you were correct, and describe what each pipeline does. How are the outputs of the two pipelines different?
 
-- I think this will give us a summary like above. The second code block will add a column that has the mean(x) for the group. 
+-   I think this will give us a summary like above. The second code block will add a column that has the mean(x) for the group.
 
 ```{r}
 df |>
@@ -267,6 +261,6 @@ df |>
   mutate(mean_x = mean(x))
 ```
 
-- I think I was correct in my thinking, I just didn't have enought detail. The first block is the same as part (d). The second block did add a column because it reports the mean for each row of the column based on the y, z group it was put into to calculate the mean. 
+-   I think I was correct in my thinking, I just didn't have enought detail. The first block is the same as part (d). The second block did add a column because it reports the mean for each row of the column based on the y, z group it was put into to calculate the mean.
 
-<p> <br> </p>
+<p><br></p>

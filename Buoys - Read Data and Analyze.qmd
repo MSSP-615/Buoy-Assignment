@@ -17,11 +17,14 @@ library(ggplot2)
 library(zoo)
 library(tibble)
 library(readr)
+library(ggthemes)
 ```
 
 ## Read in the Buoy Data
 
-```{r}
+Cite source: This code came from class. My attempts were not functioning.
+
+```{r, warning = FALSE, message=FALSE}
 file_head <- "https://www.ndbc.noaa.gov/view_text_file.php?filename=44013h"
 file_tail <- ".txt.gz&dir=data/historical/stdmet/"
 
@@ -48,24 +51,114 @@ load_buoy_data <- function(year) {
 }
 
 all_data <- lapply(1985:2024, load_buoy_data)
-combined_data <- rbindlist(all_data, fill = TRUE)
+combined_data_raw <- rbindlist(all_data, fill = TRUE)
+
+#Relable the data so you always have the raw to look back at.
+combined_data <- combined_data_raw
+```
+
+<p><br></p>
+
+## Tidy the Data
+
+Cite sources: Attempted on my own, but took some lines and glances at the class notes.
+
+```{r, warning=FALSE, message=FALSE}
+
+#combine year columns into one, delete rest
+combined_data <- combined_data %>%
+  mutate(YYYY = coalesce(YYYY, as.integer(`#YY`), YY)) %>% 
+  relocate(YYYY) %>% 
+  select(-`#YY`,-YY)
+
+#combine sea level pressure columns into one
+combined_data <- combined_data %>%
+  mutate(BAR = coalesce(BAR, as.numeric(PRES))) %>%
+  select(-PRES)
+
+#combine wind direction columns into one
+combined_data <- combined_data %>% 
+  mutate(WD = coalesce(WD, as.integer(WDIR))) %>% 
+  select(-WDIR)
+
+#Remove columns where we don't have full set of data
+combined_data <- combined_data %>%
+  select(-TIDE, -TIDE.1, -mm)
+
+#Combine year, month, day, hour into a single column variable
+#Used AI bot to help with this section of code
+combined_data <- combined_data %>% 
+  mutate(fake_date = ymd(paste0(YYYY, "-01-01")),
+         YYYY = year(fake_date)) %>% 
+  mutate(datetime = make_datetime(YYYY, as.integer(MM), as.integer(DD), as.integer(hh))) %>% 
+  relocate(datetime) %>% 
+  select(-YYYY, -MM, -DD, -hh, -fake_date)
+
+#Insert NA's where needed
+#Used AI bot to help debug the code when it clear the datetime column
+combined_data <- combined_data %>%
+  mutate(across(-datetime, 
+                ~ na_if(as.numeric(as.character(.)), 99) %>%
+                na_if(999) %>%
+                na_if(9999)))
+
 
 ```
 
+<p><br></p>
 
-## Running Code
+## Analysis Question #1: How does air temperature impact water temperature?
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+```{r, warning=FALSE, message=FALSE}
+# Code from class notes
 
-```{r}
-1 + 1
+yearly_avg_temp <- combined_data %>%
+  mutate(Year = year(datetime)) %>% 
+  group_by(Year) %>%
+  summarise(
+    avg_air_temp = mean(ATMP, na.rm = TRUE),
+    avg_water_temp = mean(WTMP, na.rm = TRUE)
+  )
+
+ggplot(yearly_avg_temp, aes(x = Year)) +
+  geom_line(aes(y = avg_air_temp, color = "Air Temperature"), size = 1) +
+  geom_line(aes(y = avg_water_temp, color = "Water Temperature"), size = 1) +
+  labs(title = "Temperature Trends Over Time",
+       x = "Year", 
+       y = "Temperature (°C)", 
+       color = "Legend") +
+  theme_minimal()
+
 ```
 
-You can add options to executable code like this
+Here we see the average yearly water and air temperatures compared on a line graph. While there is a gap in average air temperature for 2022, we can still see a general tend. The water temperature seems to generally stay a few degrees Celsius above the air temperature. There are a few times it flips, like 1997 and 2023. We also see two large spikes in the graph. Maybe these years were actually colder or warmer, or maybe they are missing some data that is making them seem that way.
 
-```{r}
-#| echo: false
-2 * 2
+<p><br></p>
+
+## Analysis Question #2: Does wind speed impact wave height?
+
+```{r, warning=FALSE, message=FALSE}
+yearly_avg_waves <- combined_data %>%
+  mutate(Year = year(datetime)) %>% 
+  mutate(Month = month(datetime)) %>% 
+  group_by(Year, Month) %>%
+  summarise(
+    avg_wind_speed = mean(WSPD, na.rm = TRUE),
+    avg_wave_height = mean(WVHT, na.rm = TRUE)
+  )
+
+ggplot(yearly_avg_waves, aes(x = avg_wind_speed, y = avg_wave_height, color = Month)) +
+  geom_point() +
+  labs(
+    title = "Correlation Between Average Wind Speed and Wave Height",
+    x = "Average Wind Speed",
+    y = "Average Wave Height"
+  ) +
+  geom_smooth(method = "lm", color = "magenta")
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Here we see a scaterplot of the average wind speed vs. average wave height. Each data point is coming the monthly average for that year. Overall, we see a positive, linear relationship between these variables. As the wind speed increases, on average the wave height also increases. The standard error band on the regression line is small, indicating that this is a pretty good model. This is what I would expect to see using the understanding that wind can create waves. I also decided to color the points based on the month of the year that the averages were taken from. It is interesting to see that the seasons of the year do seem to have a pattern there as well. The higher wind speeds seem to come from more of the winter months and the summer months seem to have lower wind speeds generally speaking. 
+
+
+
